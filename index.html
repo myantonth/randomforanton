@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Comment อะไรดีน้า?</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #C9E5FF;
+      font-family: "Prompt", sans-serif;
+      color: #000;
+      overflow-x: hidden;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      padding: 25px 20px 60px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      overflow: hidden;
+    }
+
+    .title-artwork {
+      position: relative;
+      z-index: 5;
+
+      width: min(92vw, 1100px);
+      margin: 0 auto 5px;
+    }
+
+    .title-artwork img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .character-left {
+      position: absolute;
+
+      width: clamp(190px, 24vw, 330px);
+
+      left: 0px;
+      top: 170px;
+
+      transform: rotate(90deg);
+      transform-origin: center;
+
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .character-right {
+      position: absolute;
+
+      width: clamp(190px, 23vw, 320px);
+
+      right: 0px;
+      bottom: clamp(20px, 5vh, 60px);
+
+      transform: rotate(-90deg);
+      transform-origin: center;
+
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .magazine-area {
+      position: relative;
+      z-index: 2;
+
+      perspective: 2200px;
+    }
+
+    .magazine {
+      position: relative;
+
+      height: min(65vh, 780px);
+      aspect-ratio: 4 / 5;
+
+      transform-style: preserve-3d;
+
+      transition:
+        width 0.7s ease,
+        aspect-ratio 0.7s ease;
+    }
+
+    .magazine.open {
+      aspect-ratio: 8 / 5;
+    }
+
+    .right-page {
+      position: absolute;
+
+      top: 0;
+      right: 0;
+
+      width: 50%;
+      height: 100%;
+
+      background: #fff;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      padding: 45px;
+
+      text-align: center;
+
+      opacity: 0;
+
+      box-shadow:
+        8px 10px 20px rgba(60, 100, 140, 0.14);
+
+      transition: opacity 0.2s ease;
+    }
+
+    .magazine.open .right-page {
+      opacity: 1;
+      transition-delay: 0.35s;
+    }
+
+    .right-page::before {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      width: 18px;
+      height: 100%;
+
+      background:
+        linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.14),
+          rgba(0, 0, 0, 0.04),
+          transparent
+        );
+
+      pointer-events: none;
+    }
+
+    .random-label {
+      margin-bottom: 30px;
+
+      font-family: "Inter", sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+
+      letter-spacing: 1.5px;
+
+      color: #5898d3;
+
+      white-space: nowrap;
+    }
+
+    #randomText {
+      max-width: 90%;
+
+      margin: 0 0 35px;
+
+      font-size: clamp(20px, 2.2vw, 31px);
+      font-weight: 600;
+
+      line-height: 1.55;
+    }
+
+    button {
+      font-family: "Inter", "Prompt", sans-serif;
+    }
+
+    .copy-btn {
+      border: 2px solid #000;
+
+      background: transparent;
+      color: #000;
+
+      border-radius: 50px;
+
+      padding: 10px 35px;
+
+      font-size: 13px;
+      font-weight: 500;
+
+      cursor: pointer;
+    }
+
+    .random-again {
+      position: absolute;
+
+      bottom: 25px;
+
+      border: 0;
+      border-bottom: 1px solid #000;
+
+      background: transparent;
+      color: #000;
+
+      padding: 3px 0;
+
+      font-size: 11px;
+      font-weight: 500;
+
+      cursor: pointer;
+    }
+
+    .cover {
+      position: absolute;
+
+      top: 0;
+      right: 0;
+
+      width: 50%;
+      height: 100%;
+
+      transform-origin: left center;
+      transform-style: preserve-3d;
+
+      transition:
+        transform 1s cubic-bezier(.65, .05, .36, 1),
+        width 0.7s ease;
+
+      z-index: 10;
+
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .magazine:not(.open) .cover {
+      width: 100%;
+    }
+
+    .cover-front,
+    .cover-back {
+      position: absolute;
+
+      inset: 0;
+
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .cover-front {
+      box-shadow:
+        6px 8px 16px rgba(60, 100, 140, 0.2);
+    }
+
+    .cover-front img,
+    .cover-back img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+
+      display: block;
+
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .cover-back {
+      transform: rotateY(180deg);
+
+      overflow: hidden;
+
+      background: #fff;
+
+      box-shadow:
+        -6px 8px 16px rgba(60, 100, 140, 0.14);
+    }
+
+    .cover-back img {
+      transform: scaleX(-1);
+    }
+
+    .magazine.open .cover {
+      width: 50%;
+      transform: rotateY(-180deg);
+
+      cursor: default;
+    }
+
+    .open-btn {
+      position: absolute;
+
+      left: 50%;
+      bottom: 25px;
+
+      transform: translateX(-50%);
+
+      z-index: 20;
+
+      background: rgba(255, 255, 255, 0.94);
+      color: #000;
+
+      border-radius: 50px;
+
+      padding: 13px 30px;
+
+      font-family: "Inter", "Prompt", sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+
+      white-space: nowrap;
+
+      box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.12);
+
+      pointer-events: none;
+    }
+
+    @media (max-width: 700px) {
+
+      body {
+        min-height: 100svh;
+      }
+
+      .page {
+        min-height: 100svh;
+
+        padding:
+          0
+          0
+          50px;
+
+        overflow: hidden;
+      }
+
+      .title-artwork {
+        width: 95vw;
+        margin-top: 20px;
+      }
+
+      .title-artwork img {
+        width: 100%;
+        height: auto;
+      }
+
+      .character-left {
+        position: relative;
+
+        align-self: flex-start;
+
+        width: 55vw;
+        max-width: 150px;
+
+        left: 0vw;
+        top: auto;
+
+        margin-top: -50px;
+        margin-bottom: -55px;
+
+        transform: rotate(90deg);
+
+        z-index: 4;
+      }
+
+      .magazine-area {
+        width: 100%;
+        margin-top: 0px;
+
+        display: flex;
+        justify-content: center;
+
+        perspective: 1600px;
+
+        z-index: 2;
+
+        transform: translateY(-50px);
+      }
+
+      .magazine {
+        width: 45vw;
+        max-width: none;
+
+        height: auto;
+
+        aspect-ratio: 4 / 5;
+      }
+
+      .magazine.open {
+        width: 90vw;
+
+        height: auto;
+      }
+
+      .right-page {
+        padding:
+          16px
+          9px
+          25px;
+      }
+
+      .right-page::before {
+        width: 9px;
+      }
+
+      .random-label {
+        margin-bottom: 15px;
+
+        font-size: 1.65vw;
+        letter-spacing: 1px;
+      }
+
+      #randomText {
+        max-width: 90%;
+
+        margin:
+          0
+          0
+          18px;
+
+        font-size: 3.5vw;
+
+        line-height: 1.45;
+      }
+
+      .copy-btn {
+        padding:
+          6px
+          18px;
+
+        border-width: 1.5px;
+
+        font-size: 2vw;
+      }
+
+      .random-again {
+        bottom: 10px;
+
+        font-size: 1.7vw;
+      }
+
+      .open-btn {
+        bottom: 14px;
+
+        padding:
+          8px
+          18px;
+
+        font-size: 2vw;
+      }
+
+      .character-right {
+        position: absolute;
+
+        width: 55vw;
+        max-width: 145px;
+
+        right: -1vw;
+        top: 90vw;
+
+        bottom: auto;
+
+        transform:
+          translateY(-50%)
+          rotate(-90deg);
+
+        z-index: 5;
+      }
+    }
+
+    @media (max-width: 430px) {
+
+      .page {
+        padding-top: 0;
+      }
+
+      .title-artwork {
+        width: 88vw;
+        margin-top: 20px;
+      }
+
+      .character-left {
+        width: 45vw;
+
+        left: 0vw;
+
+        margin-top: -55px;
+        margin-bottom: -52px;
+      }
+
+      .magazine-area {
+        transform: translateY(-30px);
+      }
+
+      .magazine {
+        width: 45vw;
+      }
+
+      .magazine.open {
+        width: 90vw;
+      }
+
+      .character-right {
+        width: 45vw;
+
+        right: -1vw;
+        top: 100vw;
+      }
+
+      .random-label {
+        margin-bottom: 12px;
+
+        font-size: 1.55vw;
+      }
+
+      #randomText {
+        margin-bottom: 15px;
+
+        font-size: 3.4vw;
+      }
+
+      .copy-btn {
+        padding:
+          5px
+          15px;
+
+        font-size: 1.9vw;
+      }
+
+      .random-again {
+        bottom: 8px;
+
+        font-size: 1.55vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <div class="title-artwork">
+      <img
+        src="ANTONxSaintLaurent.png"
+        alt="Comment อะไรดีน้า? สุ่มประโยคที่ชอบให้แอนตัน ANTON x Saint Laurent"
+      >
+    </div>
+
+    <img
+      src="character1.png"
+      class="character-left"
+      alt=""
+    >
+
+    <img
+      src="character2.png"
+      class="character-right"
+      alt=""
+    >
+
+    <div class="magazine-area">
+
+      <div
+        class="magazine"
+        id="magazine"
+      >
+
+        <div class="right-page">
+
+          <div class="random-label">
+            YOUR RANDOM COMMENT
+          </div>
+
+          <div id="randomText">
+            ข้อความที่ 1
+          </div>
+
+          <button
+            class="copy-btn"
+            id="copyButton"
+            onclick="copyText()"
+          >
+            COPY
+          </button>
+
+          <button
+            class="random-again"
+            onclick="randomMessage()"
+          >
+            RANDOM AGAIN
+          </button>
+
+        </div>
+
+        <div
+          class="cover"
+          id="magazineCover"
+          role="button"
+          tabindex="0"
+          aria-label="Open and random"
+        >
+
+          <div class="cover-front">
+
+            <img
+              src="cover.png"
+              alt="ANTON"
+              draggable="false"
+            >
+
+            <div class="open-btn">
+              OPEN & RANDOM
+            </div>
+
+          </div>
+
+          <div class="cover-back">
+
+            <img
+              src="cover.png"
+              alt=""
+              draggable="false"
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const messages = [
+      "ANTON looks stunning at the YSL show.",
+      "YSL and Anton have such a good chemistry.",
+      "YSL looks so good on Anton.",
+      "YSL + Anton is a combination I’ll never get tired of.",
+      "Saint Laurent really brings out Anton’s charm.",
+      "This Saint Laurent look was made for Anton.",
+      "I love seeing Anton in Saint Laurent.",
+      "I love how Anton carries this YSL look.",
+      "Anton looks incredible in this Saint Laurent look.",
+      "Saint Laurent really knows how to highlight Anton.",
+      "Anton looks effortlessly elegant in Saint Laurent.",
+      "I can’t get over how good Anton looks in Saint Laurent.",
+      "YSL suits Anton in a way that feels so effortless.",
+      "I really like Anton in this YSL styling.",
+      "Anton brings such a nice energy to Saint Laurent.",
+      "Anton gives this YSL look a whole different feel.",
+      "Anton has such a good presence in YSL.",
+      "Anton and YSL have a really nice energy together.",
+
+      "ANTON looks absolutely stunning in Saint Laurent.",
+      "ANTON is the perfect match for Saint Laurent.",
+      "YSL suits ANTON incredibly well.",
+      "ANTON looks effortlessly elegant in Saint Laurent.",
+      "Saint Laurent and ANTON are a perfect combination.",
+      "ANTON brings such a sophisticated charm to YSL.",
+      "ANTON looks amazing in this Saint Laurent look.",
+      "YSL looks even more beautiful with ANTON.",
+      "ANTON perfectly embodies the Saint Laurent aesthetic.",
+      "Saint Laurent suits ANTON’s elegant visuals so well.",
+      "ANTON looks absolutely gorgeous in YSL.",
+      "ANTON has the perfect aura for Saint Laurent.",
+      "ANTON makes every Saint Laurent look unforgettable.",
+      "YSL and ANTON are truly a perfect pairing.",
+      "ANTON looks incredibly chic in Saint Laurent.",
+      "Saint Laurent was made for someone like ANTON.",
+      "ANTON brings a unique elegance to YSL.",
+      "The combination of ANTON and Saint Laurent is absolutely stunning.",
+      "ANTON’s visuals and Saint Laurent are a perfect match.",
+      "ANTON looks effortlessly luxurious in YSL.",
+      "ANTON is absolutely captivating in Saint Laurent.",
+      "YSL brings out ANTON’s sophisticated charm perfectly.",
+      "ANTON and Saint Laurent create such an iconic fashion moment.",
+      "ANTON looks incredibly handsome in Saint Laurent.",
+      "Saint Laurent and ANTON complement each other beautifully.",
+      "ANTON is the perfect representation of Saint Laurent’s elegance.",
+      "YSL suits ANTON’s sophisticated image perfectly.",
+      "ANTON looks breathtaking in Saint Laurent.",
+      "ANTON and YSL together are simply unforgettable.",
+      "The New Face of Saint Laurent, ANTON, looks absolutely incredible.",
+
+      "Anton looks amazing with YSL.",
+      "Anton and YSL are perfect together.",
+      "Anton looks so good in YSL.",
+      "YSL suits Anton so well.",
+      "Anton is made for YSL.",
+      "Anton looks incredible in YSL.",
+      "YSL and Anton are such a perfect match.",
+      "Anton makes YSL look even better.",
+      "Anton’s YSL look is everything.",
+      "He fits the YSL vibe perfectly.",
+      "YSL looks perfect on him.",
+      "Anton really shines in YSL.",
+      "Anton and YSL just make sense.",
+      "YSL really brings out his style.",
+
+      "YSL and Anton are a perfect match.",
+
+      "SHINE ON ANTON YSL ERA",
+      "ANTON YSL WE ARE READY",
+      "SHINE BRIGHT LIKE ANTON YSL",
+      "ALL EYES ON ANTON YSL",
+      "ANTON's YSL ERA BEGINS",
+      "CHEERING FOR ANTON YSL",
+      "OBSESSED WITH ANTON YSL",
+      "ANTON YSL IS A SOLID TEN",
+      "ANTON YSL JUST SLAYS",
+      "ANTON FOR SAINT LAURENT IS FLAWLESS",
+      "ANTON SAINT LAURENT SO SNATCHED",
+      "ANTON FOR YSL IS INSANE",
+
+      "Anton mature charisma and sharp visuals perfectly suit the timeless luxury of YSL",
+      "Anton looks insanely good as the new face of Saint Laurent",
+      "Anton for YSL is actually perfect match",
+      "ANTON เป็นเหมือนดาวฤกษ์ผู้เปร่งประกายดวงใหม่สำหรับ YSL",
+      "ทุกครั้งที่เห็น Anton กับ YSL คือดีต่อใจมาก ✨"
+    ];
+
+    const magazine =
+      document.getElementById("magazine");
+
+    const magazineCover =
+      document.getElementById("magazineCover");
+
+    const randomText =
+      document.getElementById("randomText");
+
+    const copyButton =
+      document.getElementById("copyButton");
+
+    let lastIndex = -1;
+
+    magazineCover.addEventListener("click", openMagazine);
+
+    magazineCover.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openMagazine();
+      }
+    });
+
+    function openMagazine() {
+      if (magazine.classList.contains("open")) {
+        return;
+      }
+
+      randomMessage();
+
+      magazine.classList.add("open");
+    }
+
+    function randomMessage() {
+      let randomIndex;
+
+      do {
+        randomIndex =
+          Math.floor(
+            Math.random() * messages.length
+          );
+      } while (
+        messages.length > 1 &&
+        randomIndex === lastIndex
+      );
+
+      lastIndex = randomIndex;
+
+      randomText.textContent =
+        messages[randomIndex];
+
+      copyButton.textContent =
+        "COPY";
+    }
+
+    async function copyText() {
+      const text =
+        randomText.textContent;
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const textarea =
+          document.createElement("textarea");
+
+        textarea.value = text;
+
+        document.body.appendChild(textarea);
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        textarea.remove();
+      }
+
+      copyButton.textContent =
+        "COPIED ✓";
+
+      setTimeout(() => {
+        copyButton.textContent =
+          "COPY";
+      }, 1500);
+    }
+  </script>
+
+</body>
+
+</html>
