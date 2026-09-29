@@ -182,14 +182,36 @@
     }
 
     #randomText {
+      width: 90%;
       max-width: 90%;
+      max-height: 230px;
 
       margin: 0 0 35px;
+      padding: 0 10px;
 
       font-size: clamp(20px, 2.2vw, 31px);
       font-weight: 600;
 
       line-height: 1.55;
+
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      scrollbar-width: thin;
+      scrollbar-color: #9bc7eb transparent;
+    }
+
+    #randomText::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    #randomText::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #randomText::-webkit-scrollbar-thumb {
+      background: #9bc7eb;
+      border-radius: 20px;
     }
 
     button {
@@ -440,16 +462,27 @@
       }
 
       #randomText {
+        width: 90%;
         max-width: 90%;
+        max-height: 32vw;
 
         margin:
           0
           0
           18px;
 
+        padding: 0 6px;
+
         font-size: 3.5vw;
 
         line-height: 1.45;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      #randomText::-webkit-scrollbar {
+        width: 3px;
       }
 
       .copy-btn {
@@ -545,9 +578,20 @@
       }
 
       #randomText {
+        width: 90%;
+        max-width: 90%;
+        max-height: 31vw;
+
         margin-bottom: 15px;
 
+        padding: 0 5px;
+
         font-size: 3.4vw;
+
+        line-height: 1.45;
+
+        overflow-y: auto;
+        overflow-x: hidden;
       }
 
       .copy-btn {
@@ -921,6 +965,8 @@
 
       randomText.textContent =
         nextMessage;
+
+      randomText.scrollTop = 0;
 
       lastMessage =
         nextMessage;
